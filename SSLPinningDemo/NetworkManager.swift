@@ -8,6 +8,7 @@
 import Foundation
 import CommonCrypto
 import Alamofire
+import TrustKit
 
 class NetworkManager: NSObject {
     
@@ -25,6 +26,24 @@ class NetworkManager: NSObject {
     
     private override init() {
         super.init()
+        
+        //TrustKit Config
+        let trustKitConfig = [
+                    kTSKSwizzleNetworkDelegates: false,
+                    kTSKPinnedDomains: [
+                        "api.openweathermap.org": [
+                            kTSKEnforcePinning: true,
+                            kTSKIncludeSubdomains: true,
+                            kTSKPublicKeyHashes: [
+                                "axmGTWYycVN5oCjh3GJrxWVndLSZjypDO6evrHMwbXg=",
+                                "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB="
+                            ],
+                        ]
+                    ]
+        ] as [String : Any]
+                
+        TrustKit.initSharedInstance(withConfiguration: trustKitConfig)
+        
         session = URLSession.init(configuration: .ephemeral, delegate: self, delegateQueue: nil)
         
         let evaluators: [String: ServerTrustEvaluating] = [
@@ -32,7 +51,11 @@ class NetworkManager: NSObject {
         ]
         
         let manager = ServerTrustManager(evaluators: evaluators)
-        afSession = Session.init(serverTrustManager: manager)
+        
+        //afSession = Session.init(serverTrustManager: manager)
+        
+        //Uncomment the above line if not using trustkit with alamofire. Comment this one
+        afSession = Session.init(delegate: CustomSessionDelegate.init(), serverTrustManager: manager)
     }
     
     private func sha256(data : Data) -> String {
@@ -124,12 +147,18 @@ extension NetworkManager: URLSessionDelegate {
     
     func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
         
+        //Trust Kit Validation
+        if TrustKit.sharedInstance().pinningValidator.handle(challenge, completionHandler: completionHandler) == false {
+            completionHandler(.performDefaultHandling, nil)
+        }
+        
         //Create a server trust
         guard let serverTrust = challenge.protectionSpace.serverTrust, let certificate = SecTrustGetCertificateAtIndex(serverTrust, 0) else {
             return
         }
         
-        //Public Key Pinning
+        //Uncomment below code for Public Key Pinning
+        /*
         if let serverPublicKey = SecCertificateCopyKey(certificate), let serverPublicKeyData = SecKeyCopyExternalRepresentation(serverPublicKey, nil) {
             
             let data: Data = serverPublicKeyData as Data
@@ -144,33 +173,47 @@ extension NetworkManager: URLSessionDelegate {
                 print("Public Key pinning is failed")
                 completionHandler(.cancelAuthenticationChallenge, nil)
             }
-            
         }
+        */
         
-        //Certificate Pinning
         
+        
+        // Uncomment below for Certificate Pinning
+        /*
         //SSL Policy for domain check
-//        let policy = NSMutableArray()
-//        policy.add(SecPolicyCreateSSL(true, challenge.protectionSpace.host as CFString))
-//
-//        //Evaluate the certificate
-//        let isServerTrusted = SecTrustEvaluateWithError(serverTrust, nil)
-//
-//        //Local and Remote Certificate Data
-//        let remoteCertificateData: NSData = SecCertificateCopyData(certificate)
-//
-//        let pathToCertificate = Bundle.main.path(forResource: "openweathermap.org", ofType: "cer")
-//        let localCertificateData: NSData = NSData.init(contentsOfFile: pathToCertificate!)!
-//
-//        //Compare Data of both certificates
-//        if (isServerTrusted && remoteCertificateData.isEqual(to: localCertificateData as Data)) {
-//            let credential: URLCredential = URLCredential(trust: serverTrust)
-//            print("Certification pinning is successfull")
-//            completionHandler(.useCredential, credential)
-//        } else {
-//            //failure happened
-//            print("Certification pinning is failed")
-//            completionHandler(.cancelAuthenticationChallenge, nil)
-//        }
+        let policy = NSMutableArray()
+        policy.add(SecPolicyCreateSSL(true, challenge.protectionSpace.host as CFString))
+
+        //Evaluate the certificate
+        let isServerTrusted = SecTrustEvaluateWithError(serverTrust, nil)
+
+        //Local and Remote Certificate Data
+        let remoteCertificateData: NSData = SecCertificateCopyData(certificate)
+
+        let pathToCertificate = Bundle.main.path(forResource: "openweathermap.org", ofType: "cer")
+        let localCertificateData: NSData = NSData.init(contentsOfFile: pathToCertificate!)!
+
+        //Compare Data of both certificates
+        if (isServerTrusted && remoteCertificateData.isEqual(to: localCertificateData as Data)) {
+            let credential: URLCredential = URLCredential(trust: serverTrust)
+            print("Certification pinning is successfull")
+            completionHandler(.useCredential, credential)
+        } else {
+            //failure happened
+            print("Certification pinning is failed")
+            completionHandler(.cancelAuthenticationChallenge, nil)
+        }
+        */
     }
+}
+
+class CustomSessionDelegate: SessionDelegate {
+    
+    override func urlSession(_ session: URLSession, task: URLSessionTask, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
+        
+        if TrustKit.sharedInstance().pinningValidator.handle(challenge, completionHandler: completionHandler) == false {
+            completionHandler(.performDefaultHandling, nil)
+        }
+    }
+    
 }

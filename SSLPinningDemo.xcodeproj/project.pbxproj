@@ -16,6 +16,7 @@
 		B42202EA28F4917A00955DC0 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B42202E828F4917A00955DC0 /* LaunchScreen.storyboard */; };
 		B42202F828F49BEA00955DC0 /* NetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B42202F728F49BEA00955DC0 /* NetworkManager.swift */; };
 		B42202FC28F4C39900955DC0 /* openweathermap.org.cer in Resources */ = {isa = PBXBuildFile; fileRef = B42202FB28F4C39900955DC0 /* openweathermap.org.cer */; };
+		B4B2A32F2935215000427EDD /* TrustKit in Frameworks */ = {isa = PBXBuildFile; productRef = B4B2A32E2935215000427EDD /* TrustKit */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -36,6 +37,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B4B2A32F2935215000427EDD /* TrustKit in Frameworks */,
 				B407D0A728F62D230034BFF2 /* Alamofire in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -93,6 +95,7 @@
 			name = SSLPinningDemo;
 			packageProductDependencies = (
 				B407D0A628F62D230034BFF2 /* Alamofire */,
+				B4B2A32E2935215000427EDD /* TrustKit */,
 			);
 			productName = SSLPinningDemo;
 			productReference = B42202DA28F4917900955DC0 /* SSLPinningDemo.app */;
@@ -124,6 +127,7 @@
 			mainGroup = B42202D128F4917900955DC0;
 			packageReferences = (
 				B407D0A528F62D230034BFF2 /* XCRemoteSwiftPackageReference "Alamofire" */,
+				B4B2A32D2935214F00427EDD /* XCRemoteSwiftPackageReference "TrustKit" */,
 			);
 			productRefGroup = B42202DB28F4917900955DC0 /* Products */;
 			projectDirPath = "";
@@ -303,7 +307,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 5D2C52DFVS;
+				DEVELOPMENT_TEAM = FMA5LQ6WPD;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = SSLPinningDemo/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -386,6 +390,14 @@
 				version = 5.6.2;
 			};
 		};
+		B4B2A32D2935214F00427EDD /* XCRemoteSwiftPackageReference "TrustKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/datatheorem/TrustKit";
+			requirement = {
+				kind = exactVersion;
+				version = 2.0.1;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -393,6 +405,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = B407D0A528F62D230034BFF2 /* XCRemoteSwiftPackageReference "Alamofire" */;
 			productName = Alamofire;
+		};
+		B4B2A32E2935215000427EDD /* TrustKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B4B2A32D2935214F00427EDD /* XCRemoteSwiftPackageReference "TrustKit" */;
+			productName = TrustKit;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
